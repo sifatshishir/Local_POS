@@ -35,19 +35,19 @@ namespace Infrastructure {
     }
 
     void FileLogger::Debug(const std::string& message) {
-        Log(LogLevel::DEBUG, message);
+        Log(LogLevel::DEBUG_LEVEL, message);
     }
 
     void FileLogger::Info(const std::string& message) {
-        Log(LogLevel::INFO, message);
+        Log(LogLevel::INFO_LEVEL, message);
     }
 
     void FileLogger::Warn(const std::string& message) {
-        Log(LogLevel::WARN, message);
+        Log(LogLevel::WARN_LEVEL, message);
     }
 
     void FileLogger::Error(const std::string& message) {
-        Log(LogLevel::ERROR, message);
+        Log(LogLevel::ERROR_LEVEL, message);
     }
 
     std::string FileLogger::GetCurrentTimestamp() {
@@ -66,10 +66,10 @@ namespace Infrastructure {
 
     std::string FileLogger::LevelToString(LogLevel level) {
         switch (level) {
-            case LogLevel::DEBUG: return "DEBUG";
-            case LogLevel::INFO:  return "INFO ";
-            case LogLevel::WARN:  return "WARN ";
-            case LogLevel::ERROR: return "ERROR";
+            case LogLevel::DEBUG_LEVEL: return "DEBUG";
+            case LogLevel::INFO_LEVEL:  return "INFO ";
+            case LogLevel::WARN_LEVEL:  return "WARN ";
+            case LogLevel::ERROR_LEVEL: return "ERROR";
             default:              return "UNKNOWN";
         }
     }

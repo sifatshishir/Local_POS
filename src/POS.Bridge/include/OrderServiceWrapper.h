@@ -14,7 +14,17 @@ namespace Bridge {
     public ref class OrderServiceWrapper {
     public:
         OrderServiceWrapper() {
-            m_nativeService = ServiceFactory::Instance->GetOrderService();
+            m_nativeService = new std::shared_ptr<POS::Core::Services::OrderService>(
+                ServiceFactory::Instance->GetOrderService()
+            );
+        }
+
+        ~OrderServiceWrapper() {
+            delete m_nativeService;
+        }
+        
+        !OrderServiceWrapper() {
+            delete m_nativeService;
         }
 
         int CreateOrder(OrderDTO^ orderDto) {
@@ -24,23 +34,25 @@ namespace Bridge {
             
             POS::Core::Domain::ParcelProvider nativeProvider = POS::Core::Domain::ParcelProvider::None;
             if (orderDto->Provider == ParcelProviderDTO::Self) nativeProvider = POS::Core::Domain::ParcelProvider::Self;
-            if (orderDto->Provider == ParcelProviderDTO::FoodPanda) nativeProvider = POS::Core::Domain::ParcelProvider::FoodPanda;
+            else if (orderDto->Provider == ParcelProviderDTO::FoodPanda) nativeProvider = POS::Core::Domain::ParcelProvider::FoodPanda;
 
             // Map Items
             std::vector<POS::Core::Domain::OrderItem> nativeItems;
             for each (OrderItemDTO^ item in orderDto->Items) {
-                nativeItems.emplace_back(
+                // Use explicit constructor to avoid emplace_back ambiguity with managed strings
+                POS::Core::Domain::OrderItem nativeItem(
                     item->MenuItemId,
                     Utils::ToNativeString(item->MenuName),
                     item->Price,
                     item->Quantity
                 );
+                nativeItems.push_back(nativeItem);
             }
 
             if (nativeType == POS::Core::Domain::OrderType::DineIn) {
-                 return m_nativeService->CreateDineInOrder(orderDto->TableNumber, nativeItems);
+                 return (*m_nativeService)->CreateDineInOrder(orderDto->TableNumber, nativeItems).Id;
             } else {
-                 return m_nativeService->CreateParcelOrder(nativeProvider, nativeItems);
+                 return (*m_nativeService)->CreateParcelOrder(nativeProvider, nativeItems).Id;
             }
         }
 
@@ -49,7 +61,7 @@ namespace Bridge {
             if (status == OrderStatusDTO::Processing) nativeEnum = POS::Core::Domain::OrderStatus::Processing;
             if (status == OrderStatusDTO::Done) nativeEnum = POS::Core::Domain::OrderStatus::Done;
             
-            m_nativeService->UpdateOrderStatus(orderId, nativeEnum);
+            (*m_nativeService)->UpdateOrderStatus(orderId, nativeEnum);
         }
 
         List<OrderDTO^>^ GetOrdersByStatus(OrderStatusDTO status) {
@@ -57,7 +69,7 @@ namespace Bridge {
             if (status == OrderStatusDTO::Processing) nativeEnum = POS::Core::Domain::OrderStatus::Processing;
             if (status == OrderStatusDTO::Done) nativeEnum = POS::Core::Domain::OrderStatus::Done;
 
-            auto nativeOrders = m_nativeService->GetOrdersByStatus(nativeEnum);
+            auto nativeOrders = (*m_nativeService)->GetOrdersByStatus(nativeEnum);
             auto list = gcnew List<OrderDTO^>();
 
             for (const auto& order : nativeOrders) {
@@ -87,7 +99,7 @@ namespace Bridge {
         }
 
     private:
-        std::shared_ptr<POS::Core::Services::OrderService> m_nativeService;
+        std::shared_ptr<POS::Core::Services::OrderService>* m_nativeService;
     };
 
 } // namespace Bridge

@@ -7,11 +7,8 @@
 #include "ConnectionManager.h"
 #include "MenuRepository.h"
 #include "OrderRepository.h"
-#include "../../POS.Infrastructure/include/PrinterController.h"
-#include "../../POS.Infrastructure/include/FileLogger.h"
-
-// Forward declare native types to minimize includes in header if possible, 
-// but for C++/CLI using native headers directly is often necessary.
+#include "PrinterController.h"
+#include "FileLogger.h"
 
 namespace POS {
 namespace Bridge {
@@ -24,38 +21,61 @@ namespace Bridge {
 
         ServiceFactory() {
             // 0. Infrastructure
-            m_logger = std::make_shared<POS::Infrastructure::FileLogger>("pos_app.log");
-            m_printer = std::make_shared<POS::Infrastructure::PrinterController>(m_logger);
+            m_logger = new std::shared_ptr<POS::Infrastructure::ILogger>(
+                std::make_shared<POS::Infrastructure::FileLogger>("pos_app.log"));
+            
+            m_printer = new std::shared_ptr<POS::Infrastructure::IPrinter>(
+                std::make_shared<POS::Infrastructure::PrinterController>(*m_logger));
 
             // 1. Connection Manager
-            m_connManager = std::make_shared<POS::Data::ConnectionManager>();
+            m_connManager = new std::shared_ptr<POS::Data::ConnectionManager>(
+                std::make_shared<POS::Data::ConnectionManager>());
 
             // 2. Repositories
-            m_menuRepo = std::make_shared<POS::Data::MenuRepository>(m_connManager);
-            m_orderRepo = std::make_shared<POS::Data::OrderRepository>(m_connManager);
+            m_menuRepo = new std::shared_ptr<POS::Core::Interfaces::IMenuRepository>(
+                std::make_shared<POS::Data::MenuRepository>(*m_connManager));
+            
+            m_orderRepo = new std::shared_ptr<POS::Core::Interfaces::IOrderRepository>(
+                std::make_shared<POS::Data::OrderRepository>(*m_connManager));
 
             // 3. Domain Services
-            m_pricingService = std::make_shared<POS::Core::Services::PricingService>();
+            m_pricingService = new std::shared_ptr<POS::Core::Services::PricingService>(
+                std::make_shared<POS::Core::Services::PricingService>());
 
             // 4. Application Services
-            m_menuService = std::make_shared<POS::Core::Services::MenuService>(m_menuRepo);
-            m_orderService = std::make_shared<POS::Core::Services::OrderService>(m_orderRepo, m_pricingService);
+            m_menuService = new std::shared_ptr<POS::Core::Services::MenuService>(
+                std::make_shared<POS::Core::Services::MenuService>(*m_menuRepo));
+            
+            m_orderService = new std::shared_ptr<POS::Core::Services::OrderService>(
+                std::make_shared<POS::Core::Services::OrderService>(*m_orderRepo, *m_pricingService));
         }
 
-        // Methods to retrieve native pointers (internal usage for Wrappers)
-        std::shared_ptr<POS::Core::Services::MenuService> GetMenuService() { return m_menuService; }
-        std::shared_ptr<POS::Core::Services::OrderService> GetOrderService() { return m_orderService; }
-        std::shared_ptr<POS::Infrastructure::Interfaces::IPrinter> GetPrinter() { return m_printer; }
+        ~ServiceFactory() {
+            delete m_menuService;
+            delete m_orderService;
+            delete m_pricingService;
+            delete m_orderRepo;
+            delete m_menuRepo;
+            delete m_connManager;
+            delete m_printer;
+            delete m_logger;
+        }
+
+        // Methods to retrieve native pointers types (return by value is fine for shared_ptr)
+        std::shared_ptr<POS::Core::Services::MenuService> GetMenuService() { return *m_menuService; }
+        std::shared_ptr<POS::Core::Services::OrderService> GetOrderService() { return *m_orderService; }
+        std::shared_ptr<POS::Infrastructure::IPrinter> GetPrinter() { return *m_printer; }
 
     private:
-        std::shared_ptr<POS::Infrastructure::Interfaces::ILogger> m_logger;
-        std::shared_ptr<POS::Infrastructure::Interfaces::IPrinter> m_printer;
-        std::shared_ptr<POS::Data::ConnectionManager> m_connManager;
-        std::shared_ptr<POS::Core::Interfaces::IMenuRepository> m_menuRepo;
-        std::shared_ptr<POS::Core::Interfaces::IOrderRepository> m_orderRepo;
-        std::shared_ptr<POS::Core::Services::PricingService> m_pricingService;
-        std::shared_ptr<POS::Core::Services::MenuService> m_menuService;
-        std::shared_ptr<POS::Core::Services::OrderService> m_orderService;
+        // Hold pointers to shared_ptrs to avoid "mixed type" error in managed class
+        std::shared_ptr<POS::Infrastructure::ILogger>* m_logger;
+        std::shared_ptr<POS::Infrastructure::IPrinter>* m_printer;
+        std::shared_ptr<POS::Data::ConnectionManager>* m_connManager;
+        std::shared_ptr<POS::Core::Interfaces::IMenuRepository>* m_menuRepo;
+        std::shared_ptr<POS::Core::Interfaces::IOrderRepository>* m_orderRepo;
+        std::shared_ptr<POS::Core::Services::PricingService>* m_pricingService;
+        std::shared_ptr<POS::Core::Services::MenuService>* m_menuService;
+        std::shared_ptr<POS::Core::Services::OrderService>* m_orderService;
     };
 
 } // namespace Bridge

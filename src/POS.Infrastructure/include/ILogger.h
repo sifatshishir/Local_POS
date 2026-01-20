@@ -9,10 +9,10 @@ namespace Infrastructure {
 /// Log severity levels following standard logging conventions.
 /// </summary>
 enum class LogLevel {
-    DEBUG = 0,  // Detailed information for debugging
-    INFO = 1,   // General informational messages
-    WARN = 2,   // Warning messages for potentially harmful situations
-    ERROR = 3   // Error messages for serious problems
+    DEBUG_LEVEL = 0,  // Detailed information for debugging
+    INFO_LEVEL = 1,   // General informational messages
+    WARN_LEVEL = 2,   // Warning messages for potentially harmful situations
+    ERROR_LEVEL = 3   // Error messages for serious problems
 };
 
 /// <summary>

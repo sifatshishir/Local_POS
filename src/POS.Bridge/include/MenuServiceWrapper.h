@@ -12,11 +12,22 @@ namespace Bridge {
     public ref class MenuServiceWrapper {
     public:
         MenuServiceWrapper() {
-            m_nativeService = ServiceFactory::Instance->GetMenuService();
+            // Allocate native shared_ptr on heap to avoid mixed type error
+            m_nativeService = new std::shared_ptr<POS::Core::Services::MenuService>(
+                ServiceFactory::Instance->GetMenuService()
+            );
+        }
+
+        ~MenuServiceWrapper() {
+            delete m_nativeService;
+        }
+
+        !MenuServiceWrapper() {
+            delete m_nativeService;
         }
 
         List<DataTransferObjects::MenuItemDTO^>^ GetAllMenuItems() {
-            auto nativeItems = m_nativeService->GetAllMenuItems();
+            auto nativeItems = (*m_nativeService)->GetAllMenuItems();
             auto list = gcnew List<DataTransferObjects::MenuItemDTO^>();
 
             for (const auto& item : nativeItems) {
@@ -34,7 +45,7 @@ namespace Bridge {
 
         List<DataTransferObjects::MenuItemDTO^>^ GetMenuItemsByCategory(String^ category) {
             std::string nativeCategory = Utils::ToNativeString(category);
-            auto nativeItems = m_nativeService->GetMenuItemsByCategory(nativeCategory);
+            auto nativeItems = (*m_nativeService)->GetMenuItemsByCategory(nativeCategory);
             auto list = gcnew List<DataTransferObjects::MenuItemDTO^>();
 
             for (const auto& item : nativeItems) {
@@ -51,7 +62,7 @@ namespace Bridge {
         }
 
     private:
-        std::shared_ptr<POS::Core::Services::MenuService> m_nativeService;
+        std::shared_ptr<POS::Core::Services::MenuService>* m_nativeService;
     };
 
 } // namespace Bridge

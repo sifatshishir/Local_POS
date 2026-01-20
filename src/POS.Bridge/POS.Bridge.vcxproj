@@ -92,8 +92,12 @@
     <ClInclude Include="include\PrintServiceWrapper.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\AssemblyInfo.cpp" />
-    <ClCompile Include="src\pch.cpp" />
+    <ClCompile Include="src\AssemblyInfo.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="src\pch.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="src\POS.Bridge.cpp" />
   </ItemGroup>
   <ItemGroup>
