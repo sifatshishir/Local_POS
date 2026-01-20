@@ -12,22 +12,22 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
-    <ProjectGuid>{6EA78E05-DF9F-9BE2-A616-0C6A6070833A}</ProjectGuid>
+    <ProjectGuid>{ABC12345-1234-1234-1234-123456789ABC}</ProjectGuid>
     <Keyword>ManagedCProj</Keyword>
-    <RootNamespace>POSBridge</RootNamespace>
+    <RootNamespace>POSBridgeTests</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CLRSupport>true</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CLRSupport>true</CLRSupport>
@@ -58,53 +58,48 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <WarningLevel>Level4</WarningLevel>
-      <PreprocessorDefinitions>_DEBUG;POSBRIDGE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)include;..\POS.Core\include;..\POS.Data\include;..\POS.Infrastructure\include;L:\MySQL_Installed_files\include\jdbc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)src\POS.Bridge\include;$(SolutionDir)src\POS.Core\include;$(SolutionDir)src\POS.Data\include;$(SolutionDir)src\POS.Infrastructure\include;L:\MySQL_Installed_files\include\jdbc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>POS.Core.lib;POS.Data.lib;mysqlcppconn.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>POS.Bridge.lib;POS.Core.lib;POS.Data.lib;mysqlcppconn.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)\$(Platform)\;L:\MySQL_Installed_files\lib64\vs14;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <SubSystem>Console</SubSystem>
+      <EntryPointSymbol>main</EntryPointSymbol>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /d "L:\MySQL_Installed_files\lib64\mysqlcppconn-10-vs14.dll" "$(OutDir)"
+xcopy /y /d "L:\MySQL_Installed_files\lib64\libcrypto-3-x64.dll" "$(OutDir)"
+xcopy /y /d "L:\MySQL_Installed_files\lib64\libssl-3-x64.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <WarningLevel>Level4</WarningLevel>
-      <PreprocessorDefinitions>NDEBUG;POSBRIDGE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)include;..\POS.Core\include;..\POS.Data\include;..\POS.Infrastructure\include;L:\MySQL_Installed_files\include\jdbc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)src\POS.Bridge\include;$(SolutionDir)src\POS.Core\include;$(SolutionDir)src\POS.Data\include;$(SolutionDir)src\POS.Infrastructure\include;L:\MySQL_Installed_files\include\jdbc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>POS.Core.lib;POS.Data.lib;mysqlcppconn.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>POS.Bridge.lib;POS.Core.lib;POS.Data.lib;mysqlcppconn.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)\$(Platform)\;L:\MySQL_Installed_files\lib64\vs14;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <SubSystem>Console</SubSystem>
+      <EntryPointSymbol>main</EntryPointSymbol>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /d "L:\MySQL_Installed_files\lib64\mysqlcppconn-10-vs14.dll" "$(OutDir)"
+xcopy /y /d "L:\MySQL_Installed_files\lib64\libcrypto-3-x64.dll" "$(OutDir)"
+xcopy /y /d "L:\MySQL_Installed_files\lib64\libssl-3-x64.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="include\pch.h" />
-    <ClInclude Include="include\Utils.h" />
-    <ClInclude Include="include\DTOs.h" />
-    <ClInclude Include="include\ServiceFactory.h" />
-    <ClInclude Include="include\MenuServiceWrapper.h" />
-    <ClInclude Include="include\OrderServiceWrapper.h" />
-    <ClInclude Include="include\PrintServiceWrapper.h" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\AssemblyInfo.cpp" />
-    <ClCompile Include="src\pch.cpp" />
-    <ClCompile Include="src\POS.Bridge.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\POS.Core\POS.Core.vcxproj">
-      <Project>{A1B2C3D4-E5F6-7890-1234-567890ABCDEF}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\POS.Data\POS.Data.vcxproj">
-      <Project>{B2C3D4E5-F6A7-4B5C-9D0E-1F2A3B4C5D6E}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\POS.Infrastructure\POS.Infrastructure.vcxproj">
-      <Project>{B2C3D4E5-F6A7-4B5C-8D9E-0F1A2B3C4D5E}</Project>
+    <ProjectReference Include="..\..\src\POS.Bridge\POS.Bridge.vcxproj">
+      <Project>{6EA78E05-DF9F-9BE2-A616-0C6A6070833A}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
