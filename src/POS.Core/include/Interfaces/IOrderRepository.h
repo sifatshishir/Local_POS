@@ -21,6 +21,10 @@ namespace Interfaces {
         virtual void UpdateStatus(int id, Domain::OrderStatus status) = 0;
         virtual std::shared_ptr<Domain::Order> GetById(int id) = 0;
         virtual std::vector<Domain::Order> GetByStatus(Domain::OrderStatus status) = 0;
+        
+        // Pagination support
+        virtual std::vector<Domain::Order> GetByStatusPaginated(Domain::OrderStatus status, int pageNumber, int pageSize) = 0;
+        virtual int GetCountByStatus(Domain::OrderStatus status) = 0;
     };
 
 } // namespace Interfaces

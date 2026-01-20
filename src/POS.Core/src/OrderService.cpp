@@ -1,4 +1,5 @@
 #include "Services/OrderService.h"
+#include <Services/MenuService.h>
 
 namespace POS {
 namespace Core {
@@ -51,6 +52,14 @@ namespace Services {
 
     std::vector<Domain::Order> OrderService::GetOrdersByStatus(Domain::OrderStatus status) {
         return m_repository->GetByStatus(status);
+    }
+
+    std::vector<Domain::Order> OrderService::GetOrdersByStatusPaginated(Domain::OrderStatus status, int pageNumber, int pageSize) {
+        return m_repository->GetByStatusPaginated(status, pageNumber, pageSize);
+    }
+
+    int OrderService::GetOrderCountByStatus(Domain::OrderStatus status) {
+        return m_repository->GetCountByStatus(status);
     }
 
 } // namespace Services

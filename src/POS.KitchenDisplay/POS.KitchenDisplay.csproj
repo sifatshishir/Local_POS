@@ -8,4 +8,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\POS.Bridge\POS.Bridge.vcxproj" />
+  </ItemGroup>
 </Project>

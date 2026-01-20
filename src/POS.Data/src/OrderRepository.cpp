@@ -153,6 +153,65 @@ namespace Data {
         return orders;
     }
 
+    std::vector<Core::Domain::Order> OrderRepository::GetByStatusPaginated(Core::Domain::OrderStatus status, int pageNumber, int pageSize) {
+        std::vector<Core::Domain::Order> orders;
+        try {
+            auto conn = m_connectionManager->GetConnection();
+            
+            // Calculate offset (pageNumber is 1-indexed)
+            int offset = (pageNumber - 1) * pageSize;
+            
+            std::unique_ptr<sql::PreparedStatement> stmt(conn->prepareStatement(
+                "SELECT * FROM orders WHERE status = ? ORDER BY id DESC LIMIT ? OFFSET ?"
+            ));
+            stmt->setString(1, StatusToString(status));
+            stmt->setInt(2, pageSize);
+            stmt->setInt(3, offset);
+            std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
+
+            while (res->next()) {
+                 std::string typeStr = res->getString("order_type");
+                 Core::Domain::OrderType type = StringToOrderType(typeStr);
+                 int id = res->getInt("id");
+
+                 Core::Domain::Order order(id, res->getInt("table_number"));
+                 order.Type = type;
+                 order.Status = status;
+                 order.TotalAmount = res->getDouble("total_amount");
+                 order.Provider = StringToProvider(res->getString("parcel_provider"));
+                 
+                 order.Items = GetItemsForOrder(id, conn.get());
+                 
+                 orders.push_back(order);
+            }
+        }
+        catch (sql::SQLException& e) {
+            std::cerr << "SQL Error in GetByStatusPaginated: " << e.what() << std::endl;
+            throw;
+        }
+        return orders;
+    }
+
+    int OrderRepository::GetCountByStatus(Core::Domain::OrderStatus status) {
+        try {
+            auto conn = m_connectionManager->GetConnection();
+            std::unique_ptr<sql::PreparedStatement> stmt(conn->prepareStatement(
+                "SELECT COUNT(*) as total FROM orders WHERE status = ?"
+            ));
+            stmt->setString(1, StatusToString(status));
+            std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
+
+            if (res->next()) {
+                return res->getInt("total");
+            }
+        }
+        catch (sql::SQLException& e) {
+            std::cerr << "SQL Error in GetCountByStatus: " << e.what() << std::endl;
+            throw;
+        }
+        return 0;
+    }
+
     std::vector<Core::Domain::OrderItem> OrderRepository::GetItemsForOrder(int orderId, sql::Connection* conn) {
         std::vector<Core::Domain::OrderItem> items;
         std::unique_ptr<sql::PreparedStatement> stmt(conn->prepareStatement(

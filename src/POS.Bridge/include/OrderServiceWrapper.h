@@ -98,6 +98,48 @@ namespace Bridge {
             return list;
         }
 
+        List<OrderDTO^>^ GetOrdersByStatusPaginated(OrderStatusDTO status, int pageNumber, int pageSize) {
+            POS::Core::Domain::OrderStatus nativeEnum = POS::Core::Domain::OrderStatus::Ordered;
+            if (status == OrderStatusDTO::Processing) nativeEnum = POS::Core::Domain::OrderStatus::Processing;
+            if (status == OrderStatusDTO::Done) nativeEnum = POS::Core::Domain::OrderStatus::Done;
+
+            auto nativeOrders = (*m_nativeService)->GetOrdersByStatusPaginated(nativeEnum, pageNumber, pageSize);
+            auto list = gcnew List<OrderDTO^>();
+
+            for (const auto& order : nativeOrders) {
+                OrderDTO^ dto = gcnew OrderDTO();
+                dto->Id = order.Id;
+                dto->TableNumber = order.TableNumber;
+                dto->Status = status;
+                dto->TotalAmount = order.TotalAmount;
+                
+                dto->Type = (order.Type == POS::Core::Domain::OrderType::Parcel) ? OrderTypeDTO::Parcel : OrderTypeDTO::DineIn;
+                
+                if (order.Provider == POS::Core::Domain::ParcelProvider::Self) dto->Provider = ParcelProviderDTO::Self;
+                else if (order.Provider == POS::Core::Domain::ParcelProvider::FoodPanda) dto->Provider = ParcelProviderDTO::FoodPanda;
+                else dto->Provider = ParcelProviderDTO::None;
+
+                for (const auto& item : order.Items) {
+                    OrderItemDTO^ itemDto = gcnew OrderItemDTO();
+                    itemDto->MenuItemId = item.MenuItemId;
+                    itemDto->MenuName = Utils::ToManagedString(item.MenuItemName);
+                    itemDto->Quantity = item.Quantity;
+                    itemDto->Price = item.Price;
+                    dto->Items->Add(itemDto);
+                }
+                list->Add(dto);
+            }
+            return list;
+        }
+
+        int GetOrderCountByStatus(OrderStatusDTO status) {
+            POS::Core::Domain::OrderStatus nativeEnum = POS::Core::Domain::OrderStatus::Ordered;
+            if (status == OrderStatusDTO::Processing) nativeEnum = POS::Core::Domain::OrderStatus::Processing;
+            if (status == OrderStatusDTO::Done) nativeEnum = POS::Core::Domain::OrderStatus::Done;
+            
+            return (*m_nativeService)->GetOrderCountByStatus(nativeEnum);
+        }
+
     private:
         std::shared_ptr<POS::Core::Services::OrderService>* m_nativeService;
     };

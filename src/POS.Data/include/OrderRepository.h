@@ -17,6 +17,10 @@ namespace Data {
         void UpdateStatus(int id, Core::Domain::OrderStatus status) override;
         std::shared_ptr<Core::Domain::Order> GetById(int id) override;
         std::vector<Core::Domain::Order> GetByStatus(Core::Domain::OrderStatus status) override;
+        
+        // Pagination support
+        std::vector<Core::Domain::Order> GetByStatusPaginated(Core::Domain::OrderStatus status, int pageNumber, int pageSize);
+        int GetCountByStatus(Core::Domain::OrderStatus status);
 
     private:
         std::shared_ptr<ConnectionManager> m_connectionManager;

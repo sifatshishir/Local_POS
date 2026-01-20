@@ -122,6 +122,8 @@ namespace POS.UI
             SetActiveButton(btnOrderQueue);
         }
 
+
+
         private void LoadContent(string title)
         {
              // Deprecated
