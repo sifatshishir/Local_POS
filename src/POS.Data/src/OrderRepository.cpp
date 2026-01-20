@@ -15,11 +15,18 @@ namespace Data {
 
             // 1. Insert Order
             std::unique_ptr<sql::PreparedStatement> stmt(conn->prepareStatement(
-                "INSERT INTO orders (order_type, table_number, status, total_amount, created_at, parcel_provider) VALUES (?, ?, ?, ?, NOW(), ?)"
+                "INSERT INTO orders (order_type, table_number, status, total_amount, parcel_provider, created_at) VALUES (?, ?, ?, ?, ?, NOW())"
             ));
 
             stmt->setString(1, OrderTypeToString(order.Type));
-            stmt->setInt(2, order.TableNumber);
+            
+            // Handle table_number - set NULL for Parcel orders
+            if (order.Type == Core::Domain::OrderType::DineIn) {
+                stmt->setInt(2, order.TableNumber);
+            } else {
+                stmt->setNull(2, sql::DataType::INTEGER);
+            }
+            
             stmt->setString(3, StatusToString(order.Status));
             stmt->setDouble(4, order.TotalAmount);
             stmt->setString(5, ProviderToString(order.Provider));

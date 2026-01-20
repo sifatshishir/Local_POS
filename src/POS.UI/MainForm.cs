@@ -10,11 +10,49 @@ namespace POS.UI
     /// </summary>
     public partial class MainForm : Form
     {
+        private FlatButton btnTheme;
+
         public MainForm()
         {
             InitializeComponent();
             this.Text = "Restaurant POS - Cashier";
             this.WindowState = FormWindowState.Maximized;
+            
+            InitializeThemeButton();
+            ThemeManager.Instance.ThemeChanged += Instance_ThemeChanged;
+        }
+
+        private void InitializeThemeButton()
+        {
+            btnTheme = new FlatButton();
+            btnTheme.Text = "Theme: Dark";
+            btnTheme.Dock = DockStyle.Bottom;
+            btnTheme.Height = 50;
+            btnTheme.Cursor = Cursors.Hand;
+            btnTheme.Click += BtnTheme_Click;
+            
+            // Add to sidebar
+            sidebarPanel.Controls.Add(btnTheme);
+        }
+
+        private void Instance_ThemeChanged(object? sender, EventArgs e)
+        {
+            ApplyTheme();
+        }
+
+        private void BtnTheme_Click(object? sender, EventArgs e)
+        {
+            var current = ThemeManager.Instance.CurrentMode;
+            ThemeMode next = ThemeMode.Light;
+
+            switch (current)
+            {
+                case ThemeMode.Dark: next = ThemeMode.Auto; break;
+                case ThemeMode.Auto: next = ThemeMode.Light; break;
+                case ThemeMode.Light: next = ThemeMode.Dark; break;
+            }
+
+            ThemeManager.Instance.SetTheme(next);
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -32,7 +70,7 @@ namespace POS.UI
             this.BackColor = theme.BackgroundColor;
             
             // Sidebar
-            this.sidebarPanel.BackColor = theme.PrimaryColor; // Slightly different if needed, or keeping dark
+            this.sidebarPanel.BackColor = theme.PrimaryColor; 
             this.logoPanel.BackColor = theme.PrimaryColor;
             this.lblLogo.ForeColor = theme.TextColor;
             this.lblLogo.Font = theme.HeaderFont;
@@ -40,8 +78,20 @@ namespace POS.UI
             // Content
             this.contentPanel.BackColor = theme.BackgroundColor;
 
-            // Buttons are auto-themed but we can force refresh if needed
-            // ThemeManager.Instance.ApplyTheme(this); // Optional specific override
+            // Update Theme Button Text
+            if (btnTheme != null)
+            {
+                btnTheme.Text = $"Theme: {theme.CurrentMode}";
+                btnTheme.BackColor = theme.ButtonHoverColor; // Stand out slightly or same?
+                btnTheme.ForeColor = theme.TextColor;
+            }
+            
+            // Re-apply to sidebar buttons manually if needed
+            btnNewOrder.BackColor = theme.PrimaryColor;
+            btnNewOrder.ForeColor = theme.TextColor;
+            
+            btnOrderQueue.BackColor = theme.PrimaryColor;
+            btnOrderQueue.ForeColor = theme.TextColor;
         }
 
         private void btnNewOrder_Click(object sender, EventArgs e)
@@ -65,15 +115,10 @@ namespace POS.UI
 
         private void ShowOrderQueue()
         {
-            // Placeholder for now
             contentPanel.Controls.Clear();
-            Label lbl = new Label();
-            lbl.Text = "Order Queue (Coming Soon)";
-            lbl.ForeColor = Color.White;
-            lbl.AutoSize = true;
-            lbl.Location = new Point(20, 20);
-            contentPanel.Controls.Add(lbl);
-            
+            var control = new POS.UI.Controls.OrderQueueControl();
+            control.Dock = DockStyle.Fill;
+            contentPanel.Controls.Add(control);
             SetActiveButton(btnOrderQueue);
         }
 

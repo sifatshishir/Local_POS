@@ -40,8 +40,9 @@ CREATE TABLE menu_items (
 -- ============================================================================
 CREATE TABLE orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    order_type ENUM('DineIn', 'Parcel', 'Foodpanda') NOT NULL,
-    table_number VARCHAR(10) NULL,  -- NULL for Parcel/Foodpanda, required for DineIn
+    order_type ENUM('DineIn', 'Parcel') NOT NULL,
+    parcel_provider ENUM('None', 'Self', 'FoodPanda') DEFAULT 'None',
+    table_number VARCHAR(10) NULL,  -- NULL for Parcel, required for DineIn
     status ENUM('Ordered', 'Processing', 'Done') NOT NULL DEFAULT 'Ordered',
     total_amount DECIMAL(10, 2) NOT NULL CHECK (total_amount >= 0),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -50,7 +51,12 @@ CREATE TABLE orders (
     -- Business Rules Constraints
     CONSTRAINT chk_table_number CHECK (
         (order_type = 'DineIn' AND table_number IS NOT NULL) OR
-        (order_type IN ('Parcel', 'Foodpanda') AND table_number IS NULL)
+        (order_type = 'Parcel' AND table_number IS NULL)
+    ),
+    
+    CONSTRAINT chk_parcel_provider CHECK (
+        (order_type = 'DineIn' AND parcel_provider = 'None') OR
+        (order_type = 'Parcel' AND parcel_provider IN ('Self', 'FoodPanda'))
     ),
     
     -- Indexes for performance

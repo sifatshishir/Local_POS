@@ -17,7 +17,8 @@ A desktop Point of Sale system for restaurants with two applications:
 2. FUNCTIONAL REQUIREMENTS
 
 2.1 Order Management
-- Create orders with three types: Dine-in, Parcel (takeaway), Food Delivery
+- Create orders with two types: Dine-in and Parcel (takeaway)
+- Parcel orders can specify delivery provider (Self or FoodPanda)
 - Dine-in orders require table number
 - Add menu items to cart with quantity tracking
 - Calculate order totals automatically
@@ -88,18 +89,26 @@ A desktop Point of Sale system for restaurants with two applications:
 
 5.1 Tables
 menu_items: id, name, description, price, category, is_active
-orders: id, order_type, table_number, status, total_amount, created_at
+orders: id, order_type, parcel_provider, table_number, status, total_amount, created_at
 order_items: id, order_id, menu_item_id, quantity, price
 
 5.2 Order Types
-- DineIn (requires table_number)
-- Parcel (table_number = null)
-- Foodpanda (table_number = null)
+- DineIn: Customer eating at restaurant (requires table_number)
+- Parcel: Takeaway or delivery order (table_number = null)
 
-5.3 Order Status
-- Ordered (new order)
-- Processing (kitchen working on it)
-- Done (ready for customer)
+5.3 Parcel Providers
+- None: For dine-in orders only
+- Self: Restaurant's own delivery service
+- FoodPanda: Third-party delivery platform
+
+5.4 Business Rules
+- DineIn orders must have table_number and parcel_provider = 'None'
+- Parcel orders must have table_number = null and parcel_provider = 'Self' or 'FoodPanda'
+
+5.5 Order Status
+- Ordered: New order submitted
+- Processing: Kitchen is preparing the order
+- Done: Order is ready for customer/delivery
 
 ================================================================================
 

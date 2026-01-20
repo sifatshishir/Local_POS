@@ -16,6 +16,10 @@ namespace POS.UI.Forms
         private double _tax;
         private double _total;
 
+        // Dynamic Controls for Parcel Provider
+        private Label lblProvider;
+        private ComboBox cmbProvider;
+
         public CheckoutDialog(List<OrderItemDTO> orderItems, OrderTypeDTO orderType, int tableNumber)
         {
             InitializeComponent();
@@ -23,8 +27,45 @@ namespace POS.UI.Forms
             _orderType = orderType;
             _tableNumber = tableNumber;
             
+            InitializeProviderControls();
             LoadOrderSummary();
             ApplyTheme();
+        }
+
+        private void InitializeProviderControls()
+        {
+            // Only needed for Parcel orders
+            if (_orderType != OrderTypeDTO.Parcel) return;
+
+            // Expand Form and Payment Panel to accommodate new controls
+            this.Height += 60;
+            pnlPayment.Height += 60;
+            
+            // Move buttons down to avoid overlap
+            btnConfirm.Top += 60;
+            btnCancel.Top += 60;
+
+            lblProvider = new Label();
+            lblProvider.Text = "Provider:";
+            lblProvider.Font = new Font("Segoe UI", 11F);
+            lblProvider.AutoSize = true;
+            lblProvider.ForeColor = ThemeManager.Instance.TextColor;
+            lblProvider.Location = new Point(0, 100); // Below Change
+            
+            cmbProvider = new ComboBox();
+            cmbProvider.Font = new Font("Segoe UI", 11F);
+            cmbProvider.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbProvider.Size = new Size(150, 30);
+            cmbProvider.Location = new Point(150, 98);
+            cmbProvider.BackColor = ThemeManager.Instance.ButtonHoverColor;
+            cmbProvider.ForeColor = ThemeManager.Instance.TextColor;
+            
+            cmbProvider.Items.Add("Self");
+            cmbProvider.Items.Add("FoodPanda");
+            cmbProvider.SelectedIndex = 0; // Default to Self
+
+            pnlPayment.Controls.Add(lblProvider);
+            pnlPayment.Controls.Add(cmbProvider);
         }
 
         private void ApplyTheme()
@@ -40,11 +81,21 @@ namespace POS.UI.Forms
             lblCashReceived.ForeColor = theme.TextColor;
             lblChange.ForeColor = theme.TextColor;
             
-            lvOrderSummary.BackColor = Color.FromArgb(50, 50, 50);
+            if (lblProvider != null) lblProvider.ForeColor = theme.TextColor;
+            
+            // Fix: Use correct list background based on active theme, not hardcoded
+            lvOrderSummary.BackColor = theme.IsDarkMode ? Color.FromArgb(50, 50, 50) : Color.WhiteSmoke;
             lvOrderSummary.ForeColor = theme.TextColor;
             
             txtCashReceived.BackColor = theme.ButtonHoverColor;
             txtCashReceived.ForeColor = theme.TextColor;
+
+            if (cmbProvider != null)
+            {
+                cmbProvider.BackColor = theme.ButtonHoverColor;
+                cmbProvider.ForeColor = theme.TextColor;
+                // Fix: ComboBox flat style sometimes hides arrow in dark mode, but color change is main fix
+            }
         }
 
         private void LoadOrderSummary()
@@ -105,17 +156,82 @@ namespace POS.UI.Forms
             try
             {
                 // Create order via Bridge
-                var orderService = new OrderServiceWrapper();
+                OrderServiceWrapper orderService = null;
+                try
+                {
+                    orderService = new OrderServiceWrapper();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error creating OrderServiceWrapper: {ex.Message}\n\nStack: {ex.StackTrace}", 
+                        "Service Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
                 
-                var orderDto = new OrderDTO();
-                orderDto.Type = _orderType;
-                orderDto.TableNumber = _tableNumber;
-                orderDto.Status = OrderStatusDTO.Ordered;
-                orderDto.TotalAmount = _total;
-                orderDto.Items = _orderItems;
-                orderDto.Provider = ParcelProviderDTO.None;
+                // Create OrderDTO (Items list is already initialized in constructor)
+                OrderDTO orderDto = null;
+                try
+                {
+                    orderDto = new OrderDTO();
+                    orderDto.Type = _orderType;
+                    orderDto.TableNumber = _tableNumber;
+                    orderDto.Status = OrderStatusDTO.Ordered;
+                    orderDto.TotalAmount = _total;
+                    
+                    // Determine Provider
+                    if (_orderType == OrderTypeDTO.Parcel)
+                    {
+                        if (cmbProvider != null && cmbProvider.SelectedItem != null)
+                        {
+                            string selected = cmbProvider.SelectedItem.ToString();
+                            if (selected == "Self") orderDto.Provider = ParcelProviderDTO.Self;
+                            else if (selected == "FoodPanda") orderDto.Provider = ParcelProviderDTO.FoodPanda;
+                            else orderDto.Provider = ParcelProviderDTO.None;
+                        }
+                        else
+                        {
+                            // Default fallback if UI fails
+                             orderDto.Provider = ParcelProviderDTO.Self;
+                        }
+                    }
+                    else
+                    {
+                        orderDto.Provider = ParcelProviderDTO.None;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error creating OrderDTO: {ex.Message}\n\nStack: {ex.StackTrace}", 
+                        "DTO Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+                
+                // Add items to the pre-initialized Items list
+                try
+                {
+                    foreach (var item in _orderItems)
+                    {
+                        orderDto.Items.Add(item);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error adding items to OrderDTO: {ex.Message}\n\nStack: {ex.StackTrace}", 
+                        "Items Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
 
-                int orderId = orderService.CreateOrder(orderDto);
+                int orderId = 0;
+                try
+                {
+                    orderId = orderService.CreateOrder(orderDto);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error calling CreateOrder: {ex.Message}\n\nInner: {ex.InnerException?.Message}\n\nStack: {ex.StackTrace}", 
+                        "CreateOrder Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
 
                 if (orderId > 0)
                 {
@@ -143,7 +259,7 @@ namespace POS.UI.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error processing payment: {ex.Message}", "Error", 
+                MessageBox.Show($"Unexpected error: {ex.Message}\n\nStack: {ex.StackTrace}", "Error", 
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
