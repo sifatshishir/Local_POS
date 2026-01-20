@@ -35,7 +35,7 @@ namespace POS.KitchenDisplay
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1920, 1080);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
             this.Name = "KitchenDisplayForm";
             this.Text = "Restaurant POS - Kitchen Display";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;

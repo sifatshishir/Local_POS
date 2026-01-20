@@ -15,7 +15,7 @@ namespace POS.KitchenDisplay
             InitializeComponent();
             this.Text = "Restaurant POS - Kitchen Display";
             this.WindowState = FormWindowState.Maximized;
-            this.FormBorderStyle = FormBorderStyle.None; // Fullscreen for kitchen
+            // this.FormBorderStyle = FormBorderStyle.None; // Fullscreen for kitchen
         }
 
         private void KitchenDisplayForm_Load(object sender, EventArgs e)
