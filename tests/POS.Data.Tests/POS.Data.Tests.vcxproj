@@ -12,20 +12,20 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
-    <ProjectGuid>{A1B2C3D4-E5F6-4A5B-8C9D-0E1F2A3B4C5D}</ProjectGuid>
+    <ProjectGuid>{6E7F8A9B-0C1D-2E3F-4A5B-6C7D8E9F0A1B}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>POSCore</RootNamespace>
+    <RootNamespace>POSDataTests</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -55,18 +55,24 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)src\POS.Data\include;L:\MySQL_Installed_files\include\jdbc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
-      <SubSystem>
-      </SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)\$(Platform)\;L:\MySQL_Installed_files\lib64\vs14;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>POS.Data.lib;mysqlcppconn.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /d "L:\MySQL_Installed_files\lib64\mysqlcppconn-10-vs14.dll" "$(OutDir)"
+xcopy /y /d "L:\MySQL_Installed_files\lib64\libcrypto-3-x64.dll" "$(OutDir)"
+xcopy /y /d "L:\MySQL_Installed_files\lib64\libssl-3-x64.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -74,38 +80,37 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)src\POS.Data\include;L:\MySQL_Installed_files\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
-      <SubSystem>
-      </SubSystem>
+      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)\$(Platform)\;L:\MySQL_Installed_files\lib64\vs14;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>POS.Data.lib;mysqlcppconn.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /d "L:\MySQL_Installed_files\lib64\mysqlcppconn-10-vs14.dll" "$(OutDir)"
+xcopy /y /d "L:\MySQL_Installed_files\lib64\libcrypto-3-x64.dll" "$(OutDir)"
+xcopy /y /d "L:\MySQL_Installed_files\lib64\libssl-3-x64.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="include\Domain\Order.h" />
-    <ClInclude Include="include\Domain\OrderItem.h" />
-    <ClInclude Include="include\Domain\OrderType.h" />
-    <ClInclude Include="include\Domain\OrderStatus.h" />
-    <ClInclude Include="include\Domain\ParcelProvider.h" />
-    <ClInclude Include="include\Domain\MenuItem.h" />
-    <ClInclude Include="include\Services\PricingService.h" />
-    <ClInclude Include="include\Services\MenuService.h" />
-    <ClInclude Include="include\Services\OrderService.h" />
-    <ClInclude Include="include\Interfaces\IMenuRepository.h" />
-    <ClInclude Include="include\Interfaces\IOrderRepository.h" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="ConnectionManagerTests.cpp" />
+    <ClCompile Include="MenuRepositoryTests.cpp" />
+    <ClCompile Include="OrderRepositoryTests.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\PricingService.cpp" />
-    <ClCompile Include="src\MenuService.cpp" />
-    <ClCompile Include="src\OrderService.cpp" />
+    <ProjectReference Include="..\..\src\POS.Data\POS.Data.vcxproj">
+      <Project>{5D6E7F8A-9B0C-1D2E-3F4A-5B6C7D8E9F0A}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

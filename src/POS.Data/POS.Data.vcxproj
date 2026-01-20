@@ -59,7 +59,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(ProjectDir)include;..\POS.Core\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;..\POS.Core\include;..\POS.Infrastructure\include;L:\MySQL_Installed_files\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -67,6 +67,15 @@
       </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>L:\MySQL_Installed_files\lib64\vs14;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mysqlcppconn.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+    <PostBuildEvent>
+      <Command>xcopy /y /d "L:\MySQL_Installed_files\lib64\mysqlcppconn-10-vs14.dll" "$(OutDir)"
+xcopy /y /d "L:\MySQL_Installed_files\lib64\libcrypto-3-x64.dll" "$(OutDir)"
+xcopy /y /d "L:\MySQL_Installed_files\lib64\libssl-3-x64.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -78,7 +87,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(ProjectDir)include;..\POS.Core\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;..\POS.Core\include;..\POS.Infrastructure\include;L:\MySQL_Installed_files\include\jdbc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -88,10 +97,32 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>L:\MySQL_Installed_files\lib64\vs14;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mysqlcppconn.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+    <PostBuildEvent>
+      <Command>xcopy /y /d "L:\MySQL_Installed_files\lib64\mysqlcppconn-10-vs14.dll" "$(OutDir)"
+xcopy /y /d "L:\MySQL_Installed_files\lib64\libcrypto-3-x64.dll" "$(OutDir)"
+xcopy /y /d "L:\MySQL_Installed_files\lib64\libssl-3-x64.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\ConnectionManager.h" />
+    <ClInclude Include="include\MenuRepository.h" />
+    <ClInclude Include="include\OrderRepository.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\ConnectionManager.cpp" />
+    <ClCompile Include="src\MenuRepository.cpp" />
+    <ClCompile Include="src\OrderRepository.cpp" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\POS.Core\POS.Core.vcxproj">
-      <Project>{a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d}</Project>
+      <Project>{A1B2C3D4-E5F6-7890-1234-567890ABCDEF}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\POS.Infrastructure\POS.Infrastructure.vcxproj">
+      <Project>{B2C3D4E5-F6A7-4B5C-8D9E-0F1A2B3C4D5E}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
