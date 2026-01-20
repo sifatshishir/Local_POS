@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/POS.KitchenDisplay/POS.KitchenDisplay.csproj" />
+    <Project Path="src/POS.UI/POS.UI.csproj" />
+  </Folder>
+</Solution>

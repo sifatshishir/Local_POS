@@ -1,0 +1,231 @@
+# ============================================================================
+# Restaurant POS System - Git Ignore File
+# ============================================================================
+
+# ============================================================================
+# Sensitive Configuration Files
+# ============================================================================
+.env
+*.env
+!.env.template
+
+# ============================================================================
+# Visual Studio / MSBuild
+# ============================================================================
+## User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## Visual Studio cache/options
+.vs/
+.vscode/
+
+## MSTest test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+## NuGet Packages
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+
+## Visual C++ cache files
+ipch/
+*.aps
+*.ncb
+*.opendb
+*.opensdf
+*.sdf
+*.cachefile
+*.VC.db
+*.VC.VC.opendb
+
+## Precompiled Headers
+*.gch
+*.pch
+
+## Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+## Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+## Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+## Executables
+*.exe
+*.out
+*.app
+
+# ============================================================================
+# .NET / C#
+# ============================================================================
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## StyleCop
+StyleCopReport.xml
+
+## Files built by Visual Studio
+*_i.c
+*_p.c
+*_h.h
+*.ilk
+*.meta
+*.iobj
+*.ipdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*_wpftmp.csproj
+*.log
+*.tlog
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+
+# ============================================================================
+# C++ Specific
+# ============================================================================
+## Compiled files
+*.o
+*.ko
+*.obj
+*.elf
+
+## Linker output
+*.map
+*.exp
+
+## Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# ============================================================================
+# Testing
+# ============================================================================
+## Google Test
+gtest/
+gmock/
+*.gcda
+*.gcno
+*.gcov
+
+## Coverage reports
+coverage/
+*.coverage
+*.coveragexml
+
+# ============================================================================
+# Database
+# ============================================================================
+## Local database files
+*.db
+*.sqlite
+*.sqlite3
+
+## MySQL dumps (except schema/seed)
+*.sql.backup
+*.dump
+
+# ============================================================================
+# Logs
+# ============================================================================
+logs/
+*.log
+*.log.*
+
+# ============================================================================
+# OS Generated Files
+# ============================================================================
+## Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+## macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+## Linux
+*~
+
+# ============================================================================
+# IDE
+# ============================================================================
+## JetBrains Rider
+.idea/
+*.sln.iml
+
+## Visual Studio Code
+.vscode/
+*.code-workspace
+
+# ============================================================================
+# Documentation
+# ============================================================================
+## Generated documentation
+docs/html/
+docs/latex/
+Doxyfile.bak
+
+# ============================================================================
+# Temporary Files
+# ============================================================================
+*.swp
+*.swo
+*.bak
+*.tmp
+*~
+
+# ============================================================================
+# Build Artifacts
+# ============================================================================
+dist/
+build/
+*.egg-info/
+
+# ============================================================================
