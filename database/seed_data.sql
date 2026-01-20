@@ -101,7 +101,10 @@ ORDER BY category, name;
 -- ============================================================================
 
 -- Test Order 1: Dine-in
-CALL sp_create_order('DineIn', 'T-05', 45.97, @order_id_1);
+INSERT INTO orders (order_type, table_number, status, total_amount) 
+VALUES ('DineIn', 'T-05', 'Ordered', 45.97);
+SET @order_id_1 = LAST_INSERT_ID();
+
 INSERT INTO order_items (order_id, menu_item_id, quantity, price) VALUES
 (@order_id_1, 1, 2, 5.99),   -- 2x Spring Rolls
 (@order_id_1, 6, 1, 12.99),  -- 1x Grilled Chicken Burger
@@ -109,14 +112,20 @@ INSERT INTO order_items (order_id, menu_item_id, quantity, price) VALUES
 (@order_id_1, 21, 1, 6.99);  -- 1x Chocolate Brownie
 
 -- Test Order 2: Parcel
-CALL sp_create_order('Parcel', NULL, 29.98, @order_id_2);
+INSERT INTO orders (order_type, table_number, status, total_amount) 
+VALUES ('Parcel', NULL, 'Ordered', 29.98);
+SET @order_id_2 = LAST_INSERT_ID();
+
 INSERT INTO order_items (order_id, menu_item_id, quantity, price) VALUES
 (@order_id_2, 8, 1, 14.99),  -- 1x Margherita Pizza
 (@order_id_2, 14, 1, 4.50),  -- 1x Orange Juice
 (@order_id_2, 10, 1, 15.99); -- 1x Fish and Chips
 
 -- Test Order 3: Foodpanda
-CALL sp_create_order('Foodpanda', NULL, 41.98, @order_id_3);
+INSERT INTO orders (order_type, table_number, status, total_amount) 
+VALUES ('Foodpanda', NULL, 'Ordered', 41.98);
+SET @order_id_3 = LAST_INSERT_ID();
+
 INSERT INTO order_items (order_id, menu_item_id, quantity, price) VALUES
 (@order_id_3, 7, 1, 24.99),  -- 1x Beef Steak
 (@order_id_3, 17, 1, 4.50),  -- 1x Cappuccino

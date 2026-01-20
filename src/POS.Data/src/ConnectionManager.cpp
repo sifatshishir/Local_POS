@@ -3,6 +3,7 @@
 #include "../../POS.Infrastructure/include/ILogger.h"
 #include <stdexcept>
 #include <iostream>
+#include <vector>
 
 namespace POS {
 namespace Data {
@@ -23,13 +24,34 @@ namespace Data {
     }
 
     void ConnectionManager::LoadConfig() {
-        // In a real scenario, we would inject ConfigLoader or use a service locator.
-        // For now, we instantiate it to read the .env file.
-        // Assumes .env is in the running directory.
+        // Search for .env file starting from project root
+        // Executable is in: i:\Projects\VS\POS\src\POS.UI\bin\Release\net8.0-windows\
+        // Project root is: i:\Projects\VS\POS\
+        // That's 5 levels up: ..\..\..\..\..\.env
+        
         Infrastructure::ConfigLoader config;
-        // Try loading from current dir, or up one level (common in VS debug)
-        if (!config.Load(".env")) {
-            config.Load("../.env"); 
+        bool loaded = false;
+        
+        // Try multiple paths to find .env
+        std::vector<std::string> paths = {
+            ".env",                           // Current directory (for when copied to output)
+            "../.env",                        // One level up
+            "../../.env",                     // Two levels up
+            "../../../.env",                  // Three levels up
+            "../../../../.env",               // Four levels up
+            "../../../../../.env"             // Five levels up (project root)
+        };
+        
+        for (const auto& path : paths) {
+            if (config.Load(path)) {
+                loaded = true;
+                std::cout << "Loaded .env from: " << path << std::endl;
+                break;
+            }
+        }
+        
+        if (!loaded) {
+            std::cerr << "WARNING: Could not load .env file from any location. Using defaults." << std::endl;
         }
 
         m_host = config.GetString("DB_HOST", "tcp://127.0.0.1");
