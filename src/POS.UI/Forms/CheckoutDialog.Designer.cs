@@ -180,7 +180,7 @@ namespace POS.UI.Forms
             this.btnConfirm.TabIndex = 6;
             this.btnConfirm.Text = "Confirm Payment";
             this.btnConfirm.UseVisualStyleBackColor = false;
-            this.btnConfirm.Click += new System.EventHandler(this.btnConfirm_Click);
+            this.btnConfirm.Click += new System.EventHandler(this.btnConfirm_ClickAsync);
             // 
             // btnCancel
             // 

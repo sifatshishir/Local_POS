@@ -84,11 +84,35 @@ namespace POS.UI.Controls
             }
             catch {}
 
-            refreshTimer.Interval = interval;
+            refreshTimer.Interval = 60000; // Increase fallback to 1 min
             
-            // Load initial data and start timer
+            // Load initial data
             LoadCurrentTabData();
             refreshTimer.Start();
+            
+            // Start WebSocket
+            SetupWebSocket();
+        }
+
+        private POS.UI.Helpers.WebSocketHelper _wsHelper;
+
+        private async void SetupWebSocket()
+        {
+            try
+            {
+                _wsHelper = new POS.UI.Helpers.WebSocketHelper();
+                await _wsHelper.ConnectAsync();
+                await _wsHelper.StartListening((msg) => {
+                    if (msg.Contains("EVENT:REFRESH_QUEUE"))
+                    {
+                        this.Invoke(new Action(LoadCurrentTabData));
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"WS Error: {ex.Message}");
+            }
         }
 
         private void ApplyTheme()

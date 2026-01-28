@@ -138,7 +138,7 @@ namespace POS.UI.Forms
             }
         }
 
-        private void btnConfirm_Click(object sender, EventArgs e)
+        private async void btnConfirm_ClickAsync(object sender, EventArgs e)
         {
             // Validate cash received
             if (!double.TryParse(txtCashReceived.Text, out double cashReceived))
@@ -157,96 +157,81 @@ namespace POS.UI.Forms
 
             try
             {
-                // Create order via Bridge
-                OrderServiceWrapper orderService = null;
-                try
-                {
-                    orderService = new OrderServiceWrapper();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error creating OrderServiceWrapper: {ex.Message}\n\nStack: {ex.StackTrace}", 
-                        "Service Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
+                // Prepare Protocol String
+                var sb = new System.Text.StringBuilder();
+                sb.AppendLine("CMD:CREATE");
+                sb.AppendLine($"TYPE:{(_orderType == OrderTypeDTO.Parcel ? "Parcel" : "DineIn")}");
+                if (_orderType == OrderTypeDTO.DineIn) sb.AppendLine($"TABLE:{_tableNumber}");
                 
-                // Create OrderDTO (Items list is already initialized in constructor)
-                OrderDTO orderDto = null;
-                try
+                string providerStr = "None";
+                if (_orderType == OrderTypeDTO.Parcel)
                 {
-                    orderDto = new OrderDTO();
-                    orderDto.Type = _orderType;
-                    orderDto.TableNumber = _tableNumber;
-                    orderDto.Status = OrderStatusDTO.Ordered;
-                    orderDto.TotalAmount = _total;
-                    
-                    // Determine Provider
-                    if (_orderType == OrderTypeDTO.Parcel)
-                    {
-                        if (cmbProvider != null && cmbProvider.SelectedItem != null)
-                        {
-                            string selected = cmbProvider.SelectedItem.ToString();
-                            if (selected == "Self") orderDto.Provider = ParcelProviderDTO.Self;
-                            else if (selected == "FoodPanda") orderDto.Provider = ParcelProviderDTO.FoodPanda;
-                            else orderDto.Provider = ParcelProviderDTO.None;
-                        }
-                        else
-                        {
-                            // Default fallback if UI fails
-                             orderDto.Provider = ParcelProviderDTO.Self;
-                        }
-                    }
-                    else
-                    {
-                        orderDto.Provider = ParcelProviderDTO.None;
-                    }
+                     if (cmbProvider != null && cmbProvider.SelectedItem != null)
+                     {
+                         string selected = cmbProvider.SelectedItem.ToString();
+                         // Match C++ server checks
+                         if (selected == "Self") providerStr = "Self";
+                         else if (selected == "FoodPanda") providerStr = "FoodPanda";
+                     }
+                     else
+                     {
+                         // Default fallback
+                          providerStr = "Self"; // Fallback to Self
+                     }
                 }
-                catch (Exception ex)
+                sb.AppendLine($"PROVIDER:{providerStr}");
+
+                foreach (var item in _orderItems)
                 {
-                    MessageBox.Show($"Error creating OrderDTO: {ex.Message}\n\nStack: {ex.StackTrace}", 
-                        "DTO Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
+                    // Item Format: ID,NAME,PRICE,QTY
+                    // Ensure Name has no commas? For MVP assuming it's safe or replacing comma
+                    string safeName = item.MenuName.Replace(",", " ");
+                    sb.AppendLine($"ITEM:{item.MenuItemId},{safeName},{item.Price},{item.Quantity}");
                 }
+                sb.AppendLine("END");
+
+                string command = sb.ToString();
+
+                // Send via WebSocket
+                var tcs = new System.Threading.Tasks.TaskCompletionSource<int>();
+                var ws = new POS.UI.Helpers.WebSocketHelper();
                 
-                // Add items to the pre-initialized Items list
-                try
-                {
-                    foreach (var item in _orderItems)
+                // Connect and Listen
+                await ws.ConnectAsync();
+                
+                // Fire and forget listening, but we hook the callback
+                _ = ws.StartListening((msg) => {
+                    if (msg.StartsWith("ORDER_CREATED:"))
                     {
-                        orderDto.Items.Add(item);
+                        if (int.TryParse(msg.Substring("ORDER_CREATED:".Length), out int newId))
+                        {
+                            tcs.TrySetResult(newId);
+                        }
                     }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error adding items to OrderDTO: {ex.Message}\n\nStack: {ex.StackTrace}", 
-                        "Items Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
+                    else if (msg.StartsWith("ERROR:"))
+                    {
+                         tcs.TrySetException(new Exception(msg));
+                    }
+                });
 
-                int orderId = 0;
-                try
-                {
-                    orderId = orderService.CreateOrder(orderDto);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error calling CreateOrder: {ex.Message}\n\nInner: {ex.InnerException?.Message}\n\nStack: {ex.StackTrace}", 
-                        "CreateOrder Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
+                // Send
+                await ws.SendMessageAsync(command);
 
-                if (orderId > 0)
+                // Wait for response (timeout 5s)
+                var completedTask = await Task.WhenAny(tcs.Task, Task.Delay(5000));
+                
+                if (completedTask == tcs.Task)
                 {
-                    // Print receipts (future: integrate with PrintServiceWrapper)
-                    // For now, just show success
+                    int orderId = await tcs.Task;
                     
+                     // Success - Generate Receipt
                     double change = cashReceived - _total;
 
                     // Generate Receipt
                     try
                     {
                         var receiptService = new ReceiptService();
-                        // Save to Downloads folder
+                         // Save to Downloads folder
                         string downloadsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
                         string receiptDir = Path.Combine(downloadsPath, "POS_Receipts");
                         Directory.CreateDirectory(receiptDir);
@@ -255,7 +240,15 @@ namespace POS.UI.Forms
                         string fullPath = Path.Combine(receiptDir, fileName);
 
                         // Update OrderDTO with ID and Date for the receipt
+                        OrderDTO orderDto = new OrderDTO(); // We can't reuse the one we didn't populate fully?
+                        // Actually we need to reconstruct orderDto for the receipt service or reuse components
+                        // Reconstruct minimalist one for receipt:
                         orderDto.Id = orderId;
+                        orderDto.Type = _orderType;
+                        orderDto.TableNumber = _tableNumber;
+                        orderDto.TotalAmount = _total; // Assuming calculated
+                        orderDto.Provider = (ParcelProviderDTO)Enum.Parse(typeof(ParcelProviderDTO), providerStr); // Approximate
+                        foreach(var i in _orderItems) orderDto.Items.Add(i);
 
                         receiptService.GenerateReceipt(orderDto, cashReceived, change, fullPath);
 
@@ -264,28 +257,18 @@ namespace POS.UI.Forms
                         {
                             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(fullPath) { UseShellExecute = true });
                         }
-                        catch { /* Ignore if fails to open */ }
+                        catch { /* Ignore */ }
 
                         MessageBox.Show(
                             $"Order #{orderId} Created Successfully!\n" +
-                            $"Receipt saved to:\n{fileName}\n\n" +
-                            $"Total: ${_total:F2}\n" +
-                            $"Cash: ${cashReceived:F2}\n" +
-                            $"Change: ${change:F2}", 
+                            $"Receipt saved and opened.", 
                             "Payment Complete", 
                             MessageBoxButtons.OK, 
                             MessageBoxIcon.Information);
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(
-                            $"Order created, but failed to generate receipt: {ex.Message}\n\n" +
-                            $"Total: ${_total:F2}\n" +
-                            $"Cash: ${cashReceived:F2}\n" +
-                            $"Change: ${change:F2}", 
-                            "Payment Complete (Receipt Error)", 
-                            MessageBoxButtons.OK, 
-                            MessageBoxIcon.Warning);
+                        MessageBox.Show($"Receipt Error: {ex.Message}");
                     }
                     
                     this.DialogResult = DialogResult.OK;
@@ -293,9 +276,9 @@ namespace POS.UI.Forms
                 }
                 else
                 {
-                    MessageBox.Show("Failed to create order. Please try again.", "Error", 
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                     MessageBox.Show("Server timed out. Check network.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
+
             }
             catch (Exception ex)
             {
