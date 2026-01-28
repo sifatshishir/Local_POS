@@ -20,7 +20,8 @@
 #include "ConnectionManager.h"
 
 // Infrastructure Includes
-#include "FileLogger.h" // ConsoleLogger not found, using FileLogger or ILogger
+#include "FileLogger.h"
+#include "ConfigLoader.h"
 // If ConsoleLogger is desired but missing, we might use ILogger or just std::cout for now
 // But 'ConsoleLogger.h' was in the error. I'll check src to see if it was just not in include.
 
@@ -160,12 +161,27 @@ void HandleMessage(SOCKET client, std::string message) {
 int main() {
     std::cout << "Starting POS.Server..." << std::endl;
 
+    // Load Configuration
+    ConfigLoader config;
+    bool loaded = false;
+    std::vector<std::string> paths = { ".env", "../.env", "../../.env", "../../../.env", "../../../../.env" };
+    for (const auto& path : paths) {
+        if (config.Load(path)) {
+            loaded = true;
+            std::cout << "Loaded Configuration from: " << path << std::endl;
+            break;
+        }
+    }
+    if (!loaded) std::cerr << "Warning: No .env found, using defaults." << std::endl;
+
+    int wsPort = config.GetInt("WS_PORT", 8080);
+    std::string logPath = config.GetString("SERVER_LOG_PATH", "server.log");
+
     // 1. Initialize DB Connection
-    // ConnectionManager loads config internally (e.g. from .env or hardcoded)
     auto connectionManager = std::make_shared<ConnectionManager>();
     
     // 2. Initialize Repositories & Services
-    auto logger = std::make_shared<FileLogger>("server.log");
+    auto logger = std::make_shared<FileLogger>(logPath);
     auto orderRepo = std::make_shared<OrderRepository>(connectionManager);
     auto pricingService = std::make_shared<PricingService>();
     g_orderService = std::make_shared<OrderService>(orderRepo, pricingService);
@@ -175,8 +191,8 @@ int main() {
     
     g_server->SetOnMessage(HandleMessage);
     
-    if (g_server->Start(8080)) {
-        std::cout << "WebSocket Server running on port 8080" << std::endl;
+    if (g_server->Start(wsPort)) {
+        std::cout << "WebSocket Server running on port " << wsPort << std::endl;
         
         // Keep main thread alive
         std::string input;

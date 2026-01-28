@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using POS.Bridge;
 using POS.Bridge.DataTransferObjects;
 using System.Collections.Generic;
+using POS.Client.Common.Helpers;
 
 namespace POS.UI.Controls
 {
@@ -24,10 +25,7 @@ namespace POS.UI.Controls
             EnableDoubleBuffering(dgvActive);
             EnableDoubleBuffering(dgvHistory);
             
-            // Initialize timer (interval will be set from .env in Load event)
-            refreshTimer.Tick += refreshTimer_Tick;
-            
-            // Handle visibility changes to restart timer
+            // Handle visibility changes (Optional: could remove this too if only WS used)
             this.VisibleChanged += OrderQueueControl_VisibleChanged;
         }
 
@@ -35,14 +33,8 @@ namespace POS.UI.Controls
         {
             if (this.Visible)
             {
-                // Restart timer when control becomes visible
+                // Reload data when becoming visible to ensure fresh state
                 LoadCurrentTabData();
-                refreshTimer.Start();
-            }
-            else
-            {
-                // Stop timer when hidden to save resources
-                refreshTimer.Stop();
             }
         }
 
@@ -67,40 +59,22 @@ namespace POS.UI.Controls
             SetupDataGridViews();
             
             // Read refresh interval from .env
-            int interval = 5000;
-            try
-            {
-                string envPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\..\\..\\.env");
-                if (System.IO.File.Exists(envPath))
-                {
-                    foreach (var line in System.IO.File.ReadAllLines(envPath))
-                    {
-                        if (line.StartsWith("REFRESH_INTERVAL_MS="))
-                        {
-                            if (int.TryParse(line.Split('=')[1].Trim(), out int val)) interval = val;
-                        }
-                    }
-                }
-            }
-            catch {}
-
-            refreshTimer.Interval = 60000; // Increase fallback to 1 min
+             // Read refresh interval - Removed, using WS only
             
             // Load initial data
             LoadCurrentTabData();
-            refreshTimer.Start();
             
             // Start WebSocket
             SetupWebSocket();
         }
 
-        private POS.UI.Helpers.WebSocketHelper _wsHelper;
+        private WebSocketHelper _wsHelper;
 
         private async void SetupWebSocket()
         {
             try
             {
-                _wsHelper = new POS.UI.Helpers.WebSocketHelper();
+                _wsHelper = new WebSocketHelper();
                 await _wsHelper.ConnectAsync();
                 await _wsHelper.StartListening((msg) => {
                     if (msg.Contains("EVENT:REFRESH_QUEUE"))
@@ -374,11 +348,7 @@ namespace POS.UI.Controls
             LoadCurrentTabData();
         }
 
-        private void refreshTimer_Tick(object sender, EventArgs e)
-        {
-            // Auto-refresh the currently selected tab
-            LoadCurrentTabData();
-        }
+
 
         private void tabControl_SelectedIndexChanged(object sender, EventArgs e)
         {

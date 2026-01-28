@@ -6,6 +6,7 @@ using POS.Bridge;
 using POS.Bridge.DataTransferObjects;
 using POS.UI.Services;
 using System.IO;
+using POS.Client.Common.Helpers;
 
 namespace POS.UI.Forms
 {
@@ -194,7 +195,7 @@ namespace POS.UI.Forms
 
                 // Send via WebSocket
                 var tcs = new System.Threading.Tasks.TaskCompletionSource<int>();
-                var ws = new POS.UI.Helpers.WebSocketHelper();
+                var ws = new WebSocketHelper();
                 
                 // Connect and Listen
                 await ws.ConnectAsync();
@@ -231,9 +232,13 @@ namespace POS.UI.Forms
                     try
                     {
                         var receiptService = new ReceiptService();
-                         // Save to Downloads folder
-                        string downloadsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
-                        string receiptDir = Path.Combine(downloadsPath, "POS_Receipts");
+                         // Save to configured folder or Downloads
+                        string receiptDir = EnvLoader.Get("RECEIPT_PATH");
+                        if (string.IsNullOrEmpty(receiptDir) || !Directory.Exists(receiptDir))
+                        {
+                            string downloadsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+                            receiptDir = Path.Combine(downloadsPath, "POS_Receipts");
+                        }
                         Directory.CreateDirectory(receiptDir);
                         
                         string fileName = $"Receipt_{orderId}_{DateTime.Now:yyyyMMddHHmmss}.pdf";

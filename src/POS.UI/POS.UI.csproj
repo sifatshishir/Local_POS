@@ -13,6 +13,10 @@
     <PackageReference Include="PdfSharp" Version="6.1.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\POS.Client.Common\POS.Client.Common.csproj" />
+  </ItemGroup>
+
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="xcopy /y /d &quot;L:\MySQL_Installed_files\lib64\mysqlcppconn-10-vs14.dll&quot; &quot;$(OutDir)&quot;&#xD;&#xA;xcopy /y /d &quot;L:\MySQL_Installed_files\lib64\libcrypto-3-x64.dll&quot; &quot;$(OutDir)&quot;&#xD;&#xA;xcopy /y /d &quot;L:\MySQL_Installed_files\lib64\libssl-3-x64.dll&quot; &quot;$(OutDir)&quot;" />
   </Target>

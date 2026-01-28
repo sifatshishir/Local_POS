@@ -27,38 +27,55 @@ namespace Bridge {
         }
 
         List<DataTransferObjects::MenuItemDTO^>^ GetAllMenuItems() {
-            auto nativeItems = (*m_nativeService)->GetAllMenuItems();
-            auto list = gcnew List<DataTransferObjects::MenuItemDTO^>();
+            try {
+                auto nativeItems = (*m_nativeService)->GetAllMenuItems();
+                auto list = gcnew List<DataTransferObjects::MenuItemDTO^>();
 
-            for (const auto& item : nativeItems) {
-                auto dto = gcnew DataTransferObjects::MenuItemDTO();
-                dto->Id = item.Id;
-                dto->Name = Utils::ToManagedString(item.Name);
-                dto->Price = item.Price;
-                dto->Category = Utils::ToManagedString(item.Category);
-                dto->Description = Utils::ToManagedString(item.Description);
-                dto->IsActive = item.IsActive;
-                list->Add(dto);
+                for (const auto& item : nativeItems) {
+                    auto dto = gcnew DataTransferObjects::MenuItemDTO();
+                    dto->Id = item.Id;
+                    dto->Name = Utils::ToManagedString(item.Name);
+                    dto->Price = item.Price;
+                    dto->Category = Utils::ToManagedString(item.Category);
+                    dto->Description = Utils::ToManagedString(item.Description);
+                    dto->IsActive = item.IsActive;
+                    list->Add(dto);
+                }
+                return list;
             }
-            return list;
+            catch (const std::exception& e) {
+                // Marshal std::exception to System::Exception
+                throw gcnew Exception(gcnew String(e.what()));
+            }
+            catch (...) {
+                throw gcnew Exception("Unknown native exception in GetAllMenuItems");
+            }
         }
 
         List<DataTransferObjects::MenuItemDTO^>^ GetMenuItemsByCategory(String^ category) {
-            std::string nativeCategory = Utils::ToNativeString(category);
-            auto nativeItems = (*m_nativeService)->GetMenuItemsByCategory(nativeCategory);
-            auto list = gcnew List<DataTransferObjects::MenuItemDTO^>();
+            try {
+                std::string nativeCategory = Utils::ToNativeString(category);
+                auto nativeItems = (*m_nativeService)->GetMenuItemsByCategory(nativeCategory);
+                auto list = gcnew List<DataTransferObjects::MenuItemDTO^>();
 
-            for (const auto& item : nativeItems) {
-                auto dto = gcnew DataTransferObjects::MenuItemDTO();
-                dto->Id = item.Id;
-                dto->Name = Utils::ToManagedString(item.Name);
-                dto->Price = item.Price;
-                dto->Category = Utils::ToManagedString(item.Category);
-                dto->Description = Utils::ToManagedString(item.Description);
-                dto->IsActive = item.IsActive;
-                list->Add(dto);
+                for (const auto& item : nativeItems) {
+                    auto dto = gcnew DataTransferObjects::MenuItemDTO();
+                    dto->Id = item.Id;
+                    dto->Name = Utils::ToManagedString(item.Name);
+                    dto->Price = item.Price;
+                    dto->Category = Utils::ToManagedString(item.Category);
+                    dto->Description = Utils::ToManagedString(item.Description);
+                    dto->IsActive = item.IsActive;
+                    list->Add(dto);
+                }
+                return list;
             }
-            return list;
+            catch (const std::exception& e) {
+                throw gcnew Exception(gcnew String(e.what()));
+            }
+            catch (...) {
+                throw gcnew Exception("Unknown native exception in GetMenuItemsByCategory");
+            }
         }
 
     private:

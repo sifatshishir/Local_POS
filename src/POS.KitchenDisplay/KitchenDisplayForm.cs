@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using POS.Client.Common.Helpers;
 using System.Collections.Generic;
 using POS.Bridge;
 using POS.Bridge.DataTransferObjects;
@@ -11,7 +12,7 @@ namespace POS.KitchenDisplay
     {
         private OrderServiceWrapper _orderService;
         private FlowLayoutPanel flowOrders;
-        private System.Windows.Forms.Timer refreshTimer;
+        // private System.Windows.Forms.Timer refreshTimer; // Removed
         private Label lblTitle;
         private Panel pnlTop;
         private Button btnRefresh;
@@ -74,34 +75,8 @@ namespace POS.KitchenDisplay
             this.Controls.Add(flowOrders);
             this.Controls.Add(pnlTop);
 
-            // Timer
-            refreshTimer = new System.Windows.Forms.Timer();
-            refreshTimer.Tick += RefreshTimer_Tick;
-            
-            // Read Env for Interval
-            int interval = 5000;
-            try {
-                string envPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\..\\..\\.env");
-                if (System.IO.File.Exists(envPath)) {
-                    foreach (var line in System.IO.File.ReadAllLines(envPath)) {
-                        if (line.StartsWith("REFRESH_INTERVAL_MS=")) {
-                            if (int.TryParse(line.Split('=')[1].Trim(), out int val)) interval = val;
-                        }
-                    }
-                }
-            } catch {}
-            
-            
             // Start WebSocket
             SetupWebSocket();
-
-            // Timer (Backup or keep for heartbeat?)
-            // User wants to remove polling. We'll set it to a long interval just in case WS drops silently (Heartbeat).
-            // Or remove checks completely.
-            refreshTimer = new System.Windows.Forms.Timer();
-            refreshTimer.Tick += RefreshTimer_Tick;
-            refreshTimer.Interval = 60000; // 1 minute backup
-            refreshTimer.Start();
         }
 
         private void ApplyTheme()
@@ -131,10 +106,7 @@ namespace POS.KitchenDisplay
             LoadOrders();
         }
 
-        private void RefreshTimer_Tick(object sender, EventArgs e)
-        {
-            LoadOrders();
-        }
+
 
         private void LoadOrders()
         {
@@ -278,13 +250,13 @@ namespace POS.KitchenDisplay
             return card;
         }
 
-        private POS.KitchenDisplay.Helpers.WebSocketHelper _wsHelper;
+        private WebSocketHelper _wsHelper;
 
         private async void SetupWebSocket()
         {
             try
             {
-                _wsHelper = new POS.KitchenDisplay.Helpers.WebSocketHelper();
+                _wsHelper = new WebSocketHelper();
                 await _wsHelper.ConnectAsync();
                 await _wsHelper.StartListening((msg) => {
                     if (msg.Contains("EVENT:REFRESH_QUEUE"))

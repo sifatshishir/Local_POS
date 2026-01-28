@@ -1,3 +1,4 @@
+
 namespace POS.UI.Controls
 {
     partial class OrderQueueControl
@@ -28,7 +29,6 @@ namespace POS.UI.Controls
             this.btnPrevPage = new POS.UI.Controls.FlatButton();
             this.lblPageInfo = new System.Windows.Forms.Label();
             this.btnNextPage = new POS.UI.Controls.FlatButton();
-            this.refreshTimer = new System.Windows.Forms.Timer(this.components);
             this.pnlTop.SuspendLayout();
             this.tabControl.SuspendLayout();
             this.tabActive.SuspendLayout();
@@ -200,8 +200,7 @@ namespace POS.UI.Controls
             // 
             // refreshTimer
             // 
-            this.refreshTimer.Interval = 10000;
-            this.refreshTimer.Tick += new System.EventHandler(this.refreshTimer_Tick);
+            // Timer removed - using WebSocket events only
             // 
             // OrderQueueControl
             // 
@@ -234,6 +233,6 @@ namespace POS.UI.Controls
         private POS.UI.Controls.FlatButton btnPrevPage;
         private System.Windows.Forms.Label lblPageInfo;
         private POS.UI.Controls.FlatButton btnNextPage;
-        private System.Windows.Forms.Timer refreshTimer;
+        // Timer removed - using WebSocket events only
     }
 }

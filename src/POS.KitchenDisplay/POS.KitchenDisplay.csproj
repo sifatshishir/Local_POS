@@ -10,5 +10,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\POS.Bridge\POS.Bridge.vcxproj" />
+    <ProjectReference Include="..\POS.Client.Common\POS.Client.Common.csproj" />
   </ItemGroup>
 </Project>
