@@ -4,6 +4,8 @@ using System.Drawing;
 using System.Windows.Forms;
 using POS.Bridge;
 using POS.Bridge.DataTransferObjects;
+using POS.UI.Services;
+using System.IO;
 
 namespace POS.UI.Forms
 {
@@ -239,14 +241,52 @@ namespace POS.UI.Forms
                     // For now, just show success
                     
                     double change = cashReceived - _total;
-                    MessageBox.Show(
-                        $"Order #{orderId} Created Successfully!\n\n" +
-                        $"Total: ${_total:F2}\n" +
-                        $"Cash: ${cashReceived:F2}\n" +
-                        $"Change: ${change:F2}", 
-                        "Payment Complete", 
-                        MessageBoxButtons.OK, 
-                        MessageBoxIcon.Information);
+
+                    // Generate Receipt
+                    try
+                    {
+                        var receiptService = new ReceiptService();
+                        // Save to Downloads folder
+                        string downloadsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+                        string receiptDir = Path.Combine(downloadsPath, "POS_Receipts");
+                        Directory.CreateDirectory(receiptDir);
+                        
+                        string fileName = $"Receipt_{orderId}_{DateTime.Now:yyyyMMddHHmmss}.pdf";
+                        string fullPath = Path.Combine(receiptDir, fileName);
+
+                        // Update OrderDTO with ID and Date for the receipt
+                        orderDto.Id = orderId;
+
+                        receiptService.GenerateReceipt(orderDto, cashReceived, change, fullPath);
+
+                        // Open the PDF automatically
+                        try
+                        {
+                            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(fullPath) { UseShellExecute = true });
+                        }
+                        catch { /* Ignore if fails to open */ }
+
+                        MessageBox.Show(
+                            $"Order #{orderId} Created Successfully!\n" +
+                            $"Receipt saved to:\n{fileName}\n\n" +
+                            $"Total: ${_total:F2}\n" +
+                            $"Cash: ${cashReceived:F2}\n" +
+                            $"Change: ${change:F2}", 
+                            "Payment Complete", 
+                            MessageBoxButtons.OK, 
+                            MessageBoxIcon.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(
+                            $"Order created, but failed to generate receipt: {ex.Message}\n\n" +
+                            $"Total: ${_total:F2}\n" +
+                            $"Cash: ${cashReceived:F2}\n" +
+                            $"Change: ${change:F2}", 
+                            "Payment Complete (Receipt Error)", 
+                            MessageBoxButtons.OK, 
+                            MessageBoxIcon.Warning);
+                    }
                     
                     this.DialogResult = DialogResult.OK;
                     this.Close();

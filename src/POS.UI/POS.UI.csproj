@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\POS.Bridge\POS.Bridge.vcxproj" />
+    <PackageReference Include="PdfSharp" Version="6.1.1" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
